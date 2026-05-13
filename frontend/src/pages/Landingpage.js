@@ -198,7 +198,15 @@ export default function LandingPage() {
             <input placeholder="Email" style={{ padding: "13px 16px", border: "1px solid #E2DDD8", borderRadius: 12, fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none", color: "#1A1714" }} />
             <input type="password" placeholder="Password" style={{ padding: "13px 16px", border: "1px solid #E2DDD8", borderRadius: 12, fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none", color: "#1A1714" }} />
           </div>
-          <button className="btn-amber" style={{ width: "100%", justifyContent: "center", marginBottom: 16 }}>Sign in</button>
+          <button className="btn-amber" style={{ width: "100%", justifyContent: "center", marginBottom: 24 }}>Sign in</button>
+          
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#9C948C", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.1em" }}>Or login as a demo user:</div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
+            <button onClick={() => navigate('/admin-dashboard')} style={{ padding: "8px 14px", border: "1px solid #E2DDD8", borderRadius: 8, background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#1A1714", transition: "all 0.15s" }} onMouseOver={e => e.currentTarget.style.borderColor = '#1A1714'} onMouseOut={e => e.currentTarget.style.borderColor = '#E2DDD8'}>Admin</button>
+            <button onClick={() => navigate('/mentor-dashboard')} style={{ padding: "8px 14px", border: "1px solid #E2DDD8", borderRadius: 8, background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#1A1714", transition: "all 0.15s" }} onMouseOver={e => e.currentTarget.style.borderColor = '#1A1714'} onMouseOut={e => e.currentTarget.style.borderColor = '#E2DDD8'}>Mentor</button>
+            <button onClick={() => navigate('/mentee-dashboard')} style={{ padding: "8px 14px", border: "1px solid #E2DDD8", borderRadius: 8, background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#1A1714", transition: "all 0.15s" }} onMouseOver={e => e.currentTarget.style.borderColor = '#1A1714'} onMouseOut={e => e.currentTarget.style.borderColor = '#E2DDD8'}>Mentee</button>
+          </div>
+
           <button className="btn-secondary" style={{ width: "100%", justifyContent: "center" }} onClick={() => setActivePage(null)}>← Back to home</button>
         </div>
       </div>
@@ -251,6 +259,7 @@ export default function LandingPage() {
             </nav>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <button className="btn-secondary" onClick={() => navigate('/admin-dashboard')} style={{ borderColor: '#E8B86D', background: 'rgba(232, 184, 109, 0.1)' }}>Demo Admin</button>
               <button className="btn-secondary" onClick={() => navigate('/login')}>Sign in</button>
               <button className="btn-primary" onClick={() => setActivePage("signup")}>Get Started <ArrowRight /></button>
             </div>

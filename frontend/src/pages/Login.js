@@ -27,6 +27,19 @@ const studentDemo = {
   },
 };
 
+const adminDemo = {
+  email: 'admin@demo.com',
+  password: 'Admin123!',
+  token: 'demo-admin-token',
+  user: {
+    _id: 'demo-admin',
+    name: 'Demo Admin',
+    email: 'admin@demo.com',
+    role: 'ADMIN',
+    organization: 'demo-org',
+  },
+};
+
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,10 +66,12 @@ export default function LoginPage({ onNavigate }) {
     setLoading(false);
     setEmail(demoAccount.email);
     setPassword(demoAccount.password);
-    setDemoSuccess(demoAccount.user.role === 'MENTOR' ? 'mentor' : 'student');
+    setDemoSuccess(demoAccount.user.role === 'MENTOR' ? 'mentor' : demoAccount.user.role === 'ADMIN' ? 'admin' : 'student');
     setLoggedInUser(demoAccount.user);
     setTimeout(() => {
-      navigate('/mentor-dashboard');
+      if (demoAccount.user.role === 'ADMIN') navigate('/admin-dashboard');
+      else if (demoAccount.user.role === 'MENTEE') navigate('/mentee-dashboard');
+      else navigate('/mentor-dashboard');
     }, 300);
   };
 
@@ -256,8 +271,9 @@ export default function LoginPage({ onNavigate }) {
             <Divider label="or try a demo account" />
 
             {/* Demo buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginBottom: 20 }}>
               {[
+                { key: 'admin', account: adminDemo, label: 'Demo Admin', sub: 'Admin role' },
                 { key: 'mentor', account: mentorDemo, label: 'Demo Mentor', sub: 'Mentor role' },
                 { key: 'student', account: studentDemo, label: 'Demo Mentee', sub: 'Mentee role' },
               ].map(({ key, account, label, sub }) => (
