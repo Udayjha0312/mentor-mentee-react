@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const assignedProjects = [
   { id: 1, name: "Mobile App Development", mentor: "Sarah Connor", progress: 75, nextDeadline: "Tomorrow, 5:00 PM", avatar: "SC", color: "#6366f1" },
@@ -69,6 +69,15 @@ export default function MenteeDashboard() {
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  const [menteeTasks, setMenteeTasks] = useState(tasks);
+
+  useEffect(() => {
+    const storedTasks = JSON.parse(localStorage.getItem("mentorFlow_tasks"));
+    if (storedTasks) {
+      setMenteeTasks(storedTasks.filter(t => t.mentee === "Emily Davies"));
+    }
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -293,7 +302,7 @@ export default function MenteeDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {tasks.slice(0,4).map(t => {
+                      {menteeTasks.map(t => {
                         const sColors = getStatusColor(t.status);
                         return (
                           <tr key={t.id} style={{ borderBottom: "1px solid #f8fafc" }}>
@@ -361,7 +370,7 @@ export default function MenteeDashboard() {
           <div style={{ background: "#fff", borderRadius: 20, padding: 32, boxShadow: "0 2px 16px rgba(0,0,0,0.02)", border: "1px solid #f1f5f9" }}>
             <h2 style={{ margin: "0 0 24px", fontSize: 20, fontWeight: 800, color: "#1e293b" }}>All Tasks</h2>
             {["Revision Needed", "To Do", "In Progress", "Under Review", "Completed"].map(statusGroup => {
-              const groupTasks = tasks.filter(t => t.status === statusGroup);
+              const groupTasks = menteeTasks.filter(t => t.status === statusGroup);
               if (groupTasks.length === 0) return null;
               return (
                 <div key={statusGroup} style={{ marginBottom: 32 }}>
@@ -441,7 +450,14 @@ export default function MenteeDashboard() {
                 flex: 1, padding: "14px", border: "1.5px solid #e2e8f0", background: "#fff",
                 borderRadius: 12, fontWeight: 700, fontSize: 14, color: "#64748b", cursor: "pointer"
               }}>Cancel</button>
-              <button onClick={() => setShowSubmitModal(false)} style={{
+              <button onClick={() => {
+                const storedTasks = JSON.parse(localStorage.getItem("mentorFlow_tasks")) || [];
+                const updatedTasks = storedTasks.map(t => t.id === selectedTask.id ? { ...t, status: "Under Review" } : t);
+                localStorage.setItem("mentorFlow_tasks", JSON.stringify(updatedTasks));
+                setMenteeTasks(updatedTasks.filter(t => t.mentee === "Emily Davies"));
+                setShowSubmitModal(false);
+                alert("Task submitted for review!");
+              }} style={{
                 flex: 2, padding: "14px", border: "none",
                 background: "linear-gradient(135deg, #6366f1, #818cf8)",
                 borderRadius: 12, fontWeight: 700, fontSize: 14, color: "#fff", cursor: "pointer",

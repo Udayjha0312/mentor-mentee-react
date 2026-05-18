@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const mockUsers = [
   { id: 1, name: "Emily Davies", role: "Mentee", status: "Active", joined: "Oct 12, 2025", avatar: "ED", color: "#f472b6" },
@@ -94,6 +94,48 @@ export default function AdminDashboard() {
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateUser, setShowCreateUser] = useState(false);
+
+  const [projects, setProjects] = useState([]);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [selectedProject, setSelectedProject] = useState("");
+  const [selectedMentor, setSelectedMentor] = useState("");
+
+  useEffect(() => {
+    const storedProjects = JSON.parse(localStorage.getItem("mentorFlow_projects"));
+    if (storedProjects && storedProjects.length > 0) {
+      setProjects(storedProjects);
+    } else {
+      localStorage.setItem("mentorFlow_projects", JSON.stringify(mockProjects));
+      setProjects(mockProjects);
+    }
+  }, []);
+
+  const handleAddProject = () => {
+    if (!newProjectName) return;
+    const newProject = {
+      id: Date.now(),
+      name: newProjectName,
+      status: "Active",
+      mentor: "Unassigned",
+      progress: 0
+    };
+    const updatedProjects = [...projects, newProject];
+    setProjects(updatedProjects);
+    localStorage.setItem("mentorFlow_projects", JSON.stringify(updatedProjects));
+    setNewProjectName("");
+  };
+
+  const handleAssignMentor = () => {
+    if (!selectedProject || !selectedMentor) return;
+    const updatedProjects = projects.map(p => 
+      p.id.toString() === selectedProject ? { ...p, mentor: selectedMentor } : p
+    );
+    setProjects(updatedProjects);
+    localStorage.setItem("mentorFlow_projects", JSON.stringify(updatedProjects));
+    alert("Mentor assigned successfully!");
+    setSelectedProject("");
+    setSelectedMentor("");
+  };
 
   return (
     <div style={{
@@ -236,6 +278,10 @@ export default function AdminDashboard() {
               }}>
                 <div style={{ padding: "24px 28px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#1e293b" }}>Active Projects Overview</h2>
+                  <div style={{display: 'flex', gap: '8px'}}>
+                    <input value={newProjectName} onChange={e=>setNewProjectName(e.target.value)} placeholder="New Project Name..." style={{padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: 13}} />
+                    <button onClick={handleAddProject} style={{background: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: 13, fontWeight: 600}}>Add Project</button>
+                  </div>
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
@@ -250,7 +296,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockProjects.map((p, i) => (
+                    {projects.map((p, i) => (
                       <tr key={p.id} style={{ borderBottom: "1px solid #f8fafc" }}>
                         <td style={{ padding: "14px 16px", fontWeight: 600, color: "#1e293b", fontSize: 14 }}>{p.name}</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, color: "#64748b" }}>{p.mentor}</td>
@@ -350,20 +396,24 @@ export default function AdminDashboard() {
             <div style={{ display: "flex", gap: 24 }}>
               <div style={{ flex: 1, border: "1.5px solid #e2e8f0", borderRadius: 16, padding: 24 }}>
                 <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 16px" }}>1. Select Project</h3>
-                <select style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", fontFamily: "inherit" }}>
-                  <option>UI/UX Design (Unassigned)</option>
-                  <option>Data Science Fundamentals</option>
+                <select value={selectedProject} onChange={e=>setSelectedProject(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", fontFamily: "inherit", background: "#fff" }}>
+                  <option value="">-- Choose Project --</option>
+                  {projects.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.mentor})</option>
+                  ))}
                 </select>
               </div>
               <div style={{ flex: 1, border: "1.5px solid #e2e8f0", borderRadius: 16, padding: 24 }}>
                 <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 16px" }}>2. Select Mentor</h3>
-                <select style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", fontFamily: "inherit" }}>
-                  <option>Sarah Connor (Expert: UI/UX)</option>
-                  <option>Marcus Lee (Expert: Backend)</option>
+                <select value={selectedMentor} onChange={e=>setSelectedMentor(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", fontFamily: "inherit", background: "#fff" }}>
+                  <option value="">-- Choose Mentor --</option>
+                  <option value="Sarah Connor">Sarah Connor</option>
+                  <option value="Marcus Lee">Marcus Lee</option>
+                  <option value="David Chen">David Chen</option>
                 </select>
               </div>
             </div>
-            <button style={{ marginTop: 24, background: "#3b82f6", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(59,130,246,0.3)" }}>Confirm Assignment</button>
+            <button onClick={handleAssignMentor} style={{ marginTop: 24, background: "#3b82f6", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(59,130,246,0.3)" }}>Confirm Assignment</button>
           </div>
         ) : (
           <div style={{ background: "#fff", borderRadius: 20, padding: 48, textAlign: "center", boxShadow: "0 2px 16px rgba(59,130,246,0.05)", border: "1px solid #f1f5f9", color: "#94a3b8", display: "flex", flexDirection: "column", alignItems: "center" }}>

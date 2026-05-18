@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const mentees = [
   { id: 1, name: "Emily Davies", project: "Mobile App Dev", lastMeeting: "3 Days Ago", progress: 70, status: "On Track", avatar: "ED", color: "#f472b6" },
@@ -127,6 +127,52 @@ export default function MentorDashboard() {
   const [completedActions, setCompletedActions] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  
+  const [newTaskDesc, setNewTaskDesc] = useState("");
+  const [newTaskDeadline, setNewTaskDeadline] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState("Medium");
+  const [selectedMenteeForTask, setSelectedMenteeForTask] = useState("");
+
+  useEffect(() => {
+    const storedProjects = JSON.parse(localStorage.getItem("mentorFlow_projects")) || [];
+    setProjects(storedProjects.filter(p => p.mentor === "Sarah Connor"));
+
+    const storedTasks = JSON.parse(localStorage.getItem("mentorFlow_tasks"));
+    if (storedTasks) {
+      setTasks(storedTasks);
+    } else {
+      const defaultTasks = [
+        { id: 1, title: "Create Wireframes", status: "Revision Needed", priority: "High", deadline: "Today, 11:59 PM", assigner: "Sarah Connor", mentee: "Emily Davies" },
+      ];
+      localStorage.setItem("mentorFlow_tasks", JSON.stringify(defaultTasks));
+      setTasks(defaultTasks);
+    }
+  }, []);
+
+  const handleCreateTask = () => {
+    if (!newTaskDesc || !selectedMenteeForTask) {
+        alert("Please provide description and select mentee.");
+        return;
+    }
+    const newTask = {
+      id: Date.now(),
+      title: newTaskDesc,
+      status: "To Do",
+      priority: newTaskPriority,
+      deadline: newTaskDeadline || "No Deadline",
+      assigner: "Sarah Connor",
+      mentee: selectedMenteeForTask
+    };
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+    localStorage.setItem("mentorFlow_tasks", JSON.stringify(updatedTasks));
+    setNewTaskDesc("");
+    setNewTaskDeadline("");
+    alert("Task created and assigned to " + selectedMenteeForTask);
+  };
+
   const filteredMentees = mentees.filter(m =>
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     m.project.toLowerCase().includes(searchQuery.toLowerCase())
@@ -244,18 +290,29 @@ export default function MentorDashboard() {
           <div style={{ marginLeft: "30px", background: "#fff", borderRadius: 20, padding: 32, boxShadow: "0 2px 16px rgba(99,102,241,0.07)", border: "1px solid #f1f5f9", marginBottom: 32 }}>
             <h2 style={{ margin: "0 0 24px", fontSize: 20, fontWeight: 800, color: "#1e293b" }}>Create New Task</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              <div>
-                <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 6 }}>Description</label>
-                <textarea placeholder="Task description..." style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", minHeight: 100, fontFamily: "inherit", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"}></textarea>
+              <div style={{ display: "flex", gap: 20 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 6 }}>Task Title / Description</label>
+                  <input value={newTaskDesc} onChange={e=>setNewTaskDesc(e.target.value)} placeholder="Task description..." style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontFamily: "inherit", fontSize: 14, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 6 }}>Assign To Mentee</label>
+                  <select value={selectedMenteeForTask} onChange={e=>setSelectedMenteeForTask(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, background: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"}>
+                    <option value="">-- Choose Mentee --</option>
+                    {mentees.map(m => (
+                      <option key={m.id} value={m.name}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div style={{ display: "flex", gap: 20 }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 6 }}>Deadline</label>
-                  <input type="date" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                  <input type="date" value={newTaskDeadline} onChange={e=>setNewTaskDeadline(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 6 }}>Priority</label>
-                  <select style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, background: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"}>
+                  <select value={newTaskPriority} onChange={e=>setNewTaskPriority(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, background: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"}>
                     <option>Low</option>
                     <option>Medium</option>
                     <option>High</option>
@@ -275,10 +332,25 @@ export default function MentorDashboard() {
                 <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 6 }}>(Optional) Link Guideline</label>
                 <input placeholder="https://..." style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
               </div>
-              <button style={{ background: "linear-gradient(135deg, #6366f1, #818cf8)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", alignSelf: "flex-start", marginTop: 8, boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}>
+              <button onClick={handleCreateTask} style={{ background: "linear-gradient(135deg, #6366f1, #818cf8)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", alignSelf: "flex-start", marginTop: 8, boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}>
                 Create Task
               </button>
             </div>
+            
+            <h3 style={{ margin: "32px 0 16px", fontSize: 16, fontWeight: 800, color: "#1e293b" }}>Created Tasks</h3>
+            {tasks.length === 0 ? <p style={{color: "#64748b", fontSize: 14}}>No tasks created yet.</p> : (
+              <div style={{display: "flex", flexDirection: "column", gap: 12}}>
+                {tasks.map(t => (
+                  <div key={t.id} style={{display: "flex", justifyContent: "space-between", padding: 16, background: "#f8fafc", borderRadius: 12, border: "1px solid #e2e8f0"}}>
+                    <div>
+                      <div style={{fontWeight: 700, color: "#1e293b", fontSize: 14}}>{t.title}</div>
+                      <div style={{fontSize: 13, color: "#64748b"}}>Assigned to: {t.mentee} • Deadline: {t.deadline}</div>
+                    </div>
+                    <StatusBadge status={t.status} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : activeNav === "Actions" ? (
           <div style={{ marginLeft: "30px", background: "#fff", borderRadius: 20, padding: 32, boxShadow: "0 2px 16px rgba(99,102,241,0.07)", border: "1px solid #f1f5f9", marginBottom: 32 }}>
@@ -319,6 +391,23 @@ export default function MentorDashboard() {
             </div>
 
             {/* Bottom section */}
+            {/* Mentor's Projects */}
+            <div style={{ background: "#fff", borderRadius: 20, padding: 28, boxShadow: "0 2px 16px rgba(99,102,241,0.07)", border: "1px solid #f1f5f9", marginLeft: "30px", marginBottom: 28 }}>
+               <h2 style={{ margin: "0 0 16px", fontSize: 17, fontWeight: 800, color: "#1e293b" }}>My Assigned Projects (Assigned by Admin)</h2>
+               {projects.length === 0 ? (
+                 <p style={{color: "#64748b", fontSize: 14}}>No projects assigned yet.</p>
+               ) : (
+                 <div style={{display: "flex", gap: 16, flexWrap: "wrap"}}>
+                   {projects.map(p => (
+                     <div key={p.id} style={{padding: 16, border: "1px solid #e2e8f0", borderRadius: 12, minWidth: 200}}>
+                        <div style={{fontSize: 15, fontWeight: 700, color: "#1e293b", marginBottom: 6}}>{p.name}</div>
+                        <div style={{fontSize: 13, color: "#64748b"}}>Status: <StatusBadge status={p.status} /></div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+            </div>
+
             <div style={{ display: "flex", gap: 20, alignItems: "flex-start",marginLeft:"30px" }}>
               {/* Mentees Table */}
               <div style={{
